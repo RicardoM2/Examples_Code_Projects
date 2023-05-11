@@ -1,0 +1,206 @@
+<section *appLet="{
+	booking: (booking$ | async),
+	bookingHasFreeMove: (bookingHasFreeMove$ | async),
+	stations: (stations$ | async),
+	worldRegions: (worldRegions$ | async),
+	searchInput: (searchInput$ | async),
+	standardFareTotal: (standardFareTotal$ | async),
+	pointCashFareTotal: (pointCashFareTotal$ | async),
+	loyaltyPointsTotal: (loyaltyPointsTotal$ | async),
+	pointsCashLoyaltyPointsTotal: (pointsCashLoyaltyPointsTotal$ | async),
+	clubSavings: (clubSavings$ | async),
+	allFareSelectionsMade: (allFareSelectionsMade$ | async),
+	viewSelections: (viewSelections$ | async),
+	showOriginIsInternational: (showOriginIsInternational$ | async),
+	showDestinationIsInternational: (showDestinationIsInternational$ | async),
+	bundleUpsellDisplay: (bundleUpsellDisplay$ | async),
+	iropAdvisoryData: (iropAdvisoryData$ | async),
+	bookingIsClub: (bookingIsClub$ | async),
+	userIsClub: (userIsClub$ | async),
+	userIsCardHolder: (userIsCardHolder$ | async),
+	fareSelectionTotal: (fareSelectionTotal$ | async),
+	flow: (flow$ | async),
+	fareSelections: (fareSelections$ | async),
+	seatCount: (seatCount$ | async),
+	searchLoading: (searchLoading$ | async),
+	lowFareSearchLoading: (lowFareSearchLoading$ | async),
+	allOriginalJourneysWithin24HoursOfDeparture: (allOriginalJourneysWithin24HoursOfDeparture$ | async),
+	breakdownTotalPoints: (breakdownTotalPoints$ | async),
+	pointsEstimator: (pointsEstimator$ | async),
+	user: (user$ | async),
+	loylatyPointsClubSavingTotal:( loylatyPointsClubSavingTotal$ | async),
+	pointsCashFareClubSavingTotal:( pointsCashFareClubSavingTotal$ | async),
+	pointsCashLoyaltyPointsClubSavingTotal:( pointsCashLoyaltyPointsClubSavingTotal$ | async),
+	tierId: (tierId$ | async),
+	awardBookingRedepmtionFees: (awardBookingRedepmtionFees$ | async),
+	isGreySiteEnabled: (isGreySiteEnabled$ | async),
+	flightPointsBreakdownTotal: ( flightPointsBreakdownTotal$ | async),
+	flightBreakdownTotal: ( flightBreakdownTotal$ | async),
+	flightsSectionBreakdownTotals: (flightsSectionBreakdownTotals$ | async),
+	selectedAwFareType: (selectedAwFareType$ | async),
+	anyFareSelectionIsClub: (anyFareSelectionIsClub$ | async)
+} as $comp">
+	<div class="row">
+		<div class="col-12">
+			<h1 class="headline1">
+				{{'headline.text' | cms}}
+			</h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12">
+			<span class="p" [innerHTML]="'content.text' | cms | cmsToken"></span>
+			<span *ngIf="$comp.flow === 'check-in' || $comp.flow === 'my-trips'"> {{'modifyFlightPriceDisclaimer.text' | cms}}</span>
+			<br>
+			<span *ngIf="!searchResult?.search?.usePoints">
+				<span class="p-legal"> {{'flight-page.fares-listed-are' | translate}}
+					<a href="javascript:void(0)" (click)="onNonRefundableClick()" data-qa="non-refundable-link">
+						{{'flight-page.non-refundable' | translate}}
+					</a>
+					{{'flight-page.and-include-all' | translate}}
+					<a href="javascript:void(0)" (click)="onTaxesAndFeesClick()" data-qa="taxes-and-fees-link">
+						{{'flight-page.taxes-and-fees' | translate}}
+					</a>.
+				</span>
+			</span>
+			<ng-container *ngIf="searchResult?.search?.usePoints">
+				<div class="row mt-3">
+					<div class="col-12">
+						<span class="p">{{'awardDisclaimerDescription.text' | cms}}</span>
+						<span class="p">{{ taxesAndFeesForAwardBooking | currency }}</span>
+						<span class="terms-and-conditions"
+						    *ngIf="!($comp?.user?.accountDetail?.smcRedemptionFeeWaiver || $comp.tierId === 2 || $comp.tierId === 1)"
+							 [innerHTML]="'termsAndConditionsWithRedemption.text' | cms">
+						</span>
+						<span class="terms-and-conditions"
+						   *ngIf="$comp?.user?.accountDetail?.smcRedemptionFeeWaiver || $comp.tierId === 2 || $comp.tierId === 1"
+							 [innerHTML]="'termsAndConditionsWithoutRedemption.text' | cms">
+						</span>
+					</div>
+				</div>
+			</ng-container>
+		</div>
+	</div>
+	<!--BUG 4331 Loyalty 2.0: Web: CP: MT: Flight Availability Page: Information to change flight for free once after Flight Flex is purchased in the booking is missing.-->
+	<div *ngIf="$comp.booking?.info.hasPurchasedFlightFlex && !$comp.booking?.info.wasFlightFlexUsed && !$comp.allOriginalJourneysWithin24HoursOfDeparture" class="row">
+		<div class="col-12 mb-2">
+			{{'flight-page.flight-flex-notification' | translate}}
+		</div>
+	</div>
+	<div *ngIf="$comp.iropAdvisoryData?.iropCancelAdvisories || $comp.iropAdvisoryData?.iropDelayAdvisories"
+		class="row">
+		<div class="col-12 mb-2">
+			{{'flight-page.irop-notification' | translate}}
+		</div>
+	</div>
+	<div data-qa="new-search-container">
+		<div [ngStyle]="{'display': newSearch || $comp.allFareSelectionsMade ? 'none' : 'block'}">
+			<div class="d-flex justify-content-end">
+				<button type="button" class="btn btn-secondary" (click)="newSearch = true">
+					{{'flight-page.new-search' | translate}}
+				</button>
+			</div>
+		</div>
+		<div class="card pt-xl-5" [ngStyle]="{'display': newSearch ? 'block' : 'none'}">
+			<div class="card-body">
+				<app-flight-search
+					[input]="$comp.searchInput"
+					[stations]="$comp.stations"
+					[worldRegions]="$comp.worldRegions"
+					[suppressHomeLinks]="true"
+					[showOriginIsInternational]="$comp.showOriginIsInternational"
+					[showDestinationIsInternational]="$comp.showDestinationIsInternational"
+					[isBookPath]="$comp.flow === 'book'"
+					(search)="onSearch()"
+					(internationalOk)="onInternationalOk()"
+					(inputChange)="onFlightSearchInputChange($event)">
+				</app-flight-search>
+			</div>
+		</div>
+	</div>
+	<!-- Loyalty Points success Message -->
+	<div *ngIf="addedPoints" class="added-Miles mt-5 mb-5 d-flex text-center justify-content-center flex-column mt-1 mb-1">
+		<!--TODO: this needs to be localized-->
+		<h3 class="success">Success! your Balance is updated</h3>
+		<span class="points-add-text">You have {{ addedPoints | number }} points in your account.</span>
+	</div>
+	<app-fare-pickers [isGreySiteEnabled]="$comp.isGreySiteEnabled" [searchInput]="$comp.searchInput" [searchResult]="searchResult"
+		[lowFareSearchResult]="lowFareSearchResult" [viewSelections]="$comp.viewSelections"
+		[fareSelections]="$comp.fareSelections" [bookingIsClub]="$comp.bookingIsClub" [userIsClub]="$comp.userIsClub"
+		[userIsCardHolder]="$comp.userIsCardHolder" [flow]="$comp.flow" [searchLoading]="$comp.searchLoading"
+		[lowFareSearchLoading]="$comp.lowFareSearchLoading" [bookingHasFreeMove]="$comp.bookingHasFreeMove"
+		[bookingJourneys]="$comp.booking && $comp.booking.journeys"
+		[pointsEstimator]="$comp.pointsEstimator"
+		[allowPointsOnly]="($comp.flow === 'my-trips' || $comp.flow === 'check-in') && $comp.breakdownTotalPoints"
+		[user]="$comp.user" [tierId]="$comp.tierId" [seatCount]="$comp.seatCount" [selectedAwFareType]="$comp.selectedAwFareType"
+		[anyFareSelectionIsClub]="$comp.anyFareSelectionIsClub"
+		(lowFareViewChange)="onLowFareViewChange($event)" (lowFareSearchChange)="onLowFareSearchChange($event)"
+		(searchChange)="onSearchChange($event)" (usePointsChange)="onResultUsePointsChange($event)"
+		(selectedFareChange)="onSelectedFareChange($event)" (seatAvailabilityClick)="onSeatAvailabilityClick($event)"
+		(stopsClick)="onStopsClick($event)" (nonRefundableClick)="onNonRefundableClick()"
+		(taxesAndFeesClick)="onTaxesAndFeesClick()">
+	</app-fare-pickers>
+	<div class="mb-3">
+		<app-total-breakdown *ngIf="$comp.allFareSelectionsMade"
+			[total]="$comp.flightBreakdownTotal"
+			[loyaltyPointsTotal]="$comp.flightPointsBreakdownTotal"
+			[header]="'flight-page.flights-total' | translate"
+			[hideHr]="true"
+			[pointsLabelOverride]="('flight-page.points' | translate)"
+			[totalFormatter]="'currency'"
+			>
+			<ng-container *ngFor="let journeyFare of $comp.flightsSectionBreakdownTotals">
+				<app-breakdown-section
+					[header]="($comp.seatCount > 1 ? $comp.seatCount + ' ' : '') + journeyFare.origin + ' - ' + journeyFare.destination"
+					[total]="journeyFare.total"
+					[loyaltyPointsTotal]="journeyFare.pointsTotal"
+					[pointsLabelOverride]="('flight-page.points' | translate)"
+					[totalFormatter]="'currency'"
+					[disableCollapse]="true" *appTransclude>
+				</app-breakdown-section>
+			</ng-container>
+			<ng-container *ngIf="searchResult?.search?.usePoints">
+				<app-breakdown-section
+					[header]="('payment-purchase-price.redemption-loyalty' | translate)"
+					[total]="(($comp.awardBookingRedepmtionFees * $comp.seatCount) || 0) | currency"
+					[disableCollapse]="true" *appTransclude>
+				</app-breakdown-section>
+			</ng-container>
+		</app-total-breakdown>
+	</div>
+	<!--PRICING TILES-->
+	<app-pricing-tiles *ngIf="$comp.allFareSelectionsMade && $comp.bundleUpsellDisplay"
+		[fareClubTotal]="searchResult?.search?.usePoints ? $comp.selectedAwFareType === 'Pc' ?  ((($comp.pointsCashLoyaltyPointsTotal * $comp.seatCount) - $comp.pointsCashLoyaltyPointsClubSavingTotal)) : (($comp.loyaltyPointsTotal * $comp.seatCount) - $comp.loylatyPointsClubSavingTotal) : ($comp.standardFareTotal * $comp.seatCount) - $comp.clubSavings"
+		[loyaltyFareOrTaxTotals]="searchResult?.search?.usePoints ? $comp.selectedAwFareType === 'Pc' ? (($comp.pointCashFareTotal * $comp.seatCount) - $comp.pointsCashFareClubSavingTotal) : ($comp.standardFareTotal * $comp.seatCount) : 0"
+		[standardTotal]="(($comp.selectedAwFareType === '' || $comp.selectedAwFareType === 'P' ? searchResult?.search?.usePoints ? $comp.standardFareTotal  : $comp.standardFareTotal : $comp.pointCashFareTotal)) * $comp.seatCount"
+		[loyaltyPointsTotal]="searchResult?.search?.usePoints && (($comp.selectedAwFareType === '' || $comp.selectedAwFareType === 'P') ? $comp.loyaltyPointsTotal : $comp.pointsCashLoyaltyPointsTotal ) * $comp.seatCount" isFare="true"
+		[showLoyaltyTile]="searchResult?.search?.usePoints" [category]="'flight-page.fares'"
+		[showLoyaltyPointsTile]="searchResult?.search?.usePoints && featureFlags?.pointsAndCash"
+		[showClubTile]="$comp.bundleUpsellDisplay.showClub"
+		[showClubLoyaltyTiles]="$comp.bundleUpsellDisplay.userIsClubMember && searchResult?.search?.usePoints && $comp.bundleUpsellDisplay.showClub"
+		[showStandardTile]="$comp.bundleUpsellDisplay.showStandard || ($comp.bundleUpsellDisplay.showClub && !$comp.bundleUpsellDisplay.userIsClubMember) || (!$comp.bundleUpsellDisplay.showClub && $comp.bundleUpsellDisplay.userIsClubMember)"
+		[isClubMember]="$comp.bundleUpsellDisplay.userIsClubMember" (clubContinue)="onClubContinue()"
+		[awardBookingRedepmtionFees]="searchResult?.search?.usePoints && ($comp.awardBookingRedepmtionFees * $comp.seatCount) || 0"
+		(standardContinue)="onStandardContinue()" (loyaltyContinue)="onLoyaltyContinue($event, !!$comp.user)">
+	</app-pricing-tiles>
+	<!--END PRICING TILES-->
+	<div class="col-12 d-flex justify-content-center mt-3"
+		*ngIf="$comp.flow === 'check-in' || $comp.flow === 'my-trips'">
+		<button class="btn btn-secondary" (click)="onCancel()">{{'flight-page.cancel' | translate}}</button>
+	</div>
+	<ng-container *ngIf="$comp.allFareSelectionsMade">
+		<!--SAVERS CLUB ENROLLMENT DISCLAIMER-->
+		<!--NOTE: Show if both savers club and standard fare tiles are present and user is not a savers club member-->
+		<ng-container *ngIf="$comp.bundleUpsellDisplay.showClub && !$comp.bundleUpsellDisplay.userIsClubMember">
+			<span [innerHTML]="'enrollmentCharges.text' | cms" data-qa="upon-enrollment-terms-and-conditions"></span>
+		</ng-container>
+		<!--NOTE: Else show savers club member different disclaimer-->
+		<ng-container *ngIf="$comp.bundleUpsellDisplay.showClub && !$comp.bundleUpsellDisplay.showStandard && $comp.bundleUpsellDisplay.userIsClubMember">
+			<span data-qa="upon-enrollment-terms-and-conditions">
+				{{'SSR.saversClubDisclaimer.text' | cms}}
+			</span>
+		</ng-container>
+		<!--END SAVERS CLUB ENROLLMENT DISCLAIMER-->
+	</ng-container>
+
+</section>

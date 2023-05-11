@@ -1,0 +1,67 @@
+@import "~assets/scss/partials/_colors.scss";
+@import "~assets/scss/partials/_variables.scss";
+
+.border-1-gray {
+	border: 0.055rem solid $gray;
+}
+
+.flex-grow-1 {
+	flex-grow: 1;
+}
+
+.flex-basis-0 {
+	flex-basis: 0;
+}
+
+.fg-color-gray {
+	color: $gray;
+}
+
+:host-context(body.grey-site) {
+	.border-1-gray {
+		border-color: $gray-grey;
+	}
+
+	.fg-color-gray {
+		color: $gray-grey;
+	}
+}
+
+.new-search-container {
+	height: 1.5625rem;
+}
+.p-legal {
+	span {
+		line-height: 1.125rem;
+	}
+}
+.p-legal-terms {
+	color: $action;
+}
+
+.terms-and-conditions {
+	::ng-deep p {
+		display: inline;
+	}
+}
+
+.added-Miles {
+	margin: 1rem 0;
+	border: 0.3125rem solid $action;
+	border-radius: 0.375rem;
+	max-height: 6.25rem;
+	color: $action;
+	padding: 2rem 0;
+
+	@media(min-width: 425px) {
+		max-height: 9.75rem;
+	}
+
+	.points-add-text {
+		font-size: $h4-font-size;
+	}
+
+	.success {
+		font-size: $h3-font-size;
+	}
+}
